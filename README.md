@@ -1,5 +1,9 @@
 # Qwitter (qwitter)
 
+## Hello World
+
+Welcome to Qwitter! This is a cross-platform Twitter clone that demonstrates modern web development practices using Quasar Framework, VueJS, and Firebase.
+
 A Cross-Platrom Twitter Clone created with Quasar Framework, VueJS & Firebase
 
 ## Setup Firebase
