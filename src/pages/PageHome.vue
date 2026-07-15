@@ -9,13 +9,17 @@
             placeholder="What's happening?"
             maxlength="280"
             bottom-slots
-            counter
             autogrow
           >
             <template v-slot:before>
               <q-avatar size="xl">
                 <img src="https://s.gravatar.com/avatar/ce7f3697e231df38b3ca6065848520da?s=80">
               </q-avatar>
+            </template>
+            <template v-slot:hint>
+              <div class="character-counter" :class="characterCounterClass">
+                {{ characterCount }} / 280
+              </div>
             </template>
           </q-input>
         </div>
@@ -130,6 +134,22 @@ export default {
       ]
     }
   },
+  computed: {
+    characterCount() {
+      return this.newQweetContent.length
+    },
+    characterCounterClass() {
+      const count = this.characterCount
+      if (count >= 280) {
+        return 'text-negative'
+      } else if (count >= 260) {
+        return 'text-warning'
+      } else if (count >= 240) {
+        return 'text-orange'
+      }
+      return 'text-grey-7'
+    }
+  },
   methods: {
     addNewQweet() {
       let newQweet = {
@@ -200,6 +220,11 @@ export default {
   textarea
     font-size: 19px
     line-height: 1.4 !important
+.character-counter
+  font-size: 14px
+  font-weight: 500
+  text-align: right
+  transition: color 0.3s ease
 .divider
   border-top: 1px solid
   border-bottom: 1px solid
