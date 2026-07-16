@@ -1,100 +1,123 @@
-# Qwitter (qwitter)
+# Qwitter
 
-A Cross-Platrom Twitter Clone created with Quasar Framework, VueJS & Firebase
+A cross-platform Twitter clone built with Quasar Framework, Vue.js, and Firebase.
 
-## Setup Firebase
-- Create a new Firebase project named Qwitter
-- Create a Web App named Qwitter
-- Copy the config from the code sample that appears and add it to src/boot/firebase.js
-- Create a Cloud Firestore database - make sure you choose "Start in test mode"
+## Tech Stack
 
-## Install the dependencies
+### Frontend
+
+- **[Quasar Framework](https://quasar.dev/)** (v1.x) - High-performance Material Design component framework
+  - Single codebase for multiple platforms (Web, Desktop, Mobile)
+  - Auto-import of components and directives
+  - Built-in responsive design utilities
+  - Material Icons and FontAwesome 5 icon sets
+  
+- **[Vue.js](https://vuejs.org/)** (v2.x) - Progressive JavaScript framework
+  - Component-based architecture
+  - Reactive data binding
+  - Vue Router for navigation (hash mode)
+  
+### Backend & Database
+
+- **[Firebase](https://firebase.google.com/)** (v8.x) - Backend-as-a-Service platform
+  - **Cloud Firestore** - NoSQL document database for real-time data
+  - **Firebase Authentication** - User authentication and authorization
+  - **Firebase Hosting** - Static web hosting (optional)
+
+### Cross-Platform Support
+
+- **[Electron](https://www.electronjs.org/)** (v9.x) - Desktop application framework
+  - Native desktop apps for Windows, macOS, and Linux
+  - Node.js integration enabled
+  - Electron Packager for building distributions
+  
+- **[Apache Cordova](https://cordova.apache.org/)** - Mobile application framework
+  - Native iOS and Android apps from web codebase
+  - Access to native device APIs
+
+### Styling & UI
+
+- **[Sass](https://sass-lang.com/)** - CSS preprocessor for enhanced styling
+- **[PostCSS](https://postcss.org/)** - CSS transformation and optimization
+- **Material Design** - Google's design system for consistent UI/UX
+- **Roboto Font** - Primary typeface
+- **Material Icons & FontAwesome 5** - Comprehensive icon libraries
+
+### Build Tools & Development
+
+- **Webpack** - Module bundler (via Quasar CLI)
+- **Babel** - JavaScript transpiler for ES6+ support
+- **[date-fns](https://date-fns.org/)** (v2.x) - Modern date utility library
+- **Electron DevTools** - Debugging tools for Electron apps
+- **Hot Module Replacement** - Fast development with live reloading
+
+### Browser Support
+
+Supports modern browsers including:
+- Chrome (last 10 versions)
+- Firefox (last 10 versions)
+- Safari (last 7 versions)
+- Edge (last 4 versions)
+- Mobile browsers (iOS, Android, Chrome Android, Firefox Android)
+
+## Features
+
+- Web application
+- Desktop app (Electron)
+- Mobile apps (iOS & Android via Cordova)
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js >= 10.18.1
+- npm >= 6.13.4
+
+### Installation
+
 ```bash
 npm install
 ```
 
-## Web Version
+### Firebase Setup
 
-### Start  in development mode
+1. Create a new Firebase project
+2. Create a Web App in your Firebase project
+3. Copy the Firebase config to `src/boot/firebase.js`
+4. Create a Cloud Firestore database in test mode
+
+### Development
+
 ```bash
+# Web
 quasar dev
-```
 
-### Build for production
-```bash
-quasar build
-```
-
-## Desktop Version (Electron)
-
-### Start  in development mode
-```bash
+# Desktop
 quasar dev -m electron
-```
 
-### Build for production
-To build for different platforms, change the `electron > packager > platform` setting in `quasar.conf.js` to `win32`, `darwin`, `mas` or `linux` 
-```bash
-quasar build -m electron
-```
-
-## iOS Version (Cordova)
-
-### Install Cordova globally
-```bash
-npm install -g cordova
-```
-or
-```bash
-sudo npm install -g cordova
-```
-
-### Install Xcode
-
-[Install Xcode](https://developer.apple.com/download/more/)
-
-### Start  in development mode
-```bash
+# iOS (requires Xcode)
 quasar dev -m cordova -T ios
-```
 
-### Start on other Simulator Devices
-```bash
-cd src-cordova
-cordova run ios --list
-cd ..
-quasar dev -m cordova -T ios -e "iPhone-12, 14.3"
-```
-
-### Build for production
-```bash
-quasar build -m cordova -T ios
-```
-
-## Android Version (Cordova)
-
-### Install Cordova globally
-```bash
-npm install -g cordova
-```
-or
-```bash
-sudo npm install -g cordova
-```
-
-### Follow all steps on Quasar site
-
-[Follow all steps on Quasar site](https://quasar.dev/quasar-cli/developing-cordova-apps/preparation#Android-setup)
-
-### Launch Android Virtual Device
-Android Studio > Configure > AVD Manager > Launch an AVD
-
-### Start  in development mode
-```bash
+# Android (requires Android Studio)
 quasar dev -m cordova -T android
 ```
 
-### Build for production
+### Build for Production
+
 ```bash
+# Web
+quasar build
+
+# Desktop
+quasar build -m electron
+
+# iOS
+quasar build -m cordova -T ios
+
+# Android
 quasar build -m cordova -T android
 ```
+
+## License
+
+See [LICENSE](LICENSE) file for details.
