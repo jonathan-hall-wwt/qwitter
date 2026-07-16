@@ -9,13 +9,15 @@
             placeholder="What's happening?"
             maxlength="280"
             bottom-slots
-            counter
             autogrow
           >
             <template v-slot:before>
               <q-avatar size="xl">
                 <img src="https://s.gravatar.com/avatar/ce7f3697e231df38b3ca6065848520da?s=80">
               </q-avatar>
+            </template>
+            <template v-slot:hint>
+              <div :class="characterCounterClass">{{ characterCountText }}</div>
             </template>
           </q-input>
         </div>
@@ -114,6 +116,7 @@ export default {
   data() {
     return {
       newQweetContent: '',
+      maxCharacters: 280,
       qweets: [
         // {
         //   id: 'ID1',
@@ -128,6 +131,26 @@ export default {
         //   liked: true
         // },
       ]
+    }
+  },
+  computed: {
+    characterCount() {
+      return this.newQweetContent.length
+    },
+    charactersRemaining() {
+      return this.maxCharacters - this.characterCount
+    },
+    characterCountText() {
+      return `${this.characterCount} / ${this.maxCharacters}`
+    },
+    characterCounterClass() {
+      if (this.charactersRemaining < 0) {
+        return 'text-negative text-weight-bold'
+      } else if (this.charactersRemaining <= 20) {
+        return 'text-warning text-weight-bold'
+      } else {
+        return 'text-grey-7'
+      }
     }
   },
   methods: {
