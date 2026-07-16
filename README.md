@@ -2,11 +2,31 @@
 
 A Cross-Platrom Twitter Clone created with Quasar Framework, VueJS & Firebase
 
+## Features
+
+- ✅ Post qweets (tweets) with text content
+- ✅ Like/unlike qweets
+- ✅ Delete qweets
+- ✅ Real-time updates with Firebase
+- ✅ **Photo uploads** - Attach photos to your qweets
+- ✅ Responsive design for mobile, tablet, and desktop
+- ✅ Cross-platform support (Web, Desktop, iOS, Android)
+
 ## Setup Firebase
+
+### Firestore Database
 - Create a new Firebase project named Qwitter
 - Create a Web App named Qwitter
 - Copy the config from the code sample that appears and add it to src/boot/firebase.js
 - Create a Cloud Firestore database - make sure you choose "Start in test mode"
+
+### Firebase Storage (for photo uploads)
+- In your Firebase Console, navigate to Storage
+- Click "Get Started"
+- Choose "Start in test mode" for development
+- Select a Cloud Storage location
+
+See [PHOTO_FEATURE.md](PHOTO_FEATURE.md) for detailed information about the photo upload feature.
 
 ## Install the dependencies
 ```bash
