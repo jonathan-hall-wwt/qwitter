@@ -9,6 +9,7 @@ A Cross-Platrom Twitter Clone created with Quasar Framework, VueJS & Firebase
 - ✅ Delete qweets
 - ✅ Real-time updates with Firebase
 - ✅ **Photo uploads** - Attach photos to your qweets
+- ✅ **User Profile** - View your profile with statistics and all your qweets
 - ✅ Responsive design for mobile, tablet, and desktop
 - ✅ Cross-platform support (Web, Desktop, iOS, Android)
 
