@@ -13,7 +13,13 @@ const routes = [
         path: '/about',
         component: () => import('pages/PageAbout.vue'),
         name: 'About'
+      },
+      { 
+        path: '/hashtag/:hashtag',
+        component: () => import('pages/PageHashtag.vue'),
+        name: 'Hashtag'
       }
+
     ]
   },
 

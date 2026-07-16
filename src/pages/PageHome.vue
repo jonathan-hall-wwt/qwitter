@@ -66,7 +66,7 @@
                   <br class="lt-md">&bull; {{ qweet.date | relativeDate }}
                 </span>
               </q-item-label>
-              <q-item-label class="qweet-content text-body1">{{ qweet.content }}</q-item-label>
+              <q-item-label class="qweet-content text-body1" v-html="formatContent(qweet.content)"></q-item-label>
               <div class="qweet-icons row justify-between q-mt-sm">
                 <q-btn
                   color="grey"
@@ -154,11 +154,28 @@ export default {
     }
   },
   methods: {
+    extractHashtags(content) {
+      const hashtagRegex = /#(\w+)/g
+      const hashtags = []
+      let match
+      while ((match = hashtagRegex.exec(content)) !== null) {
+        hashtags.push(match[1].toLowerCase())
+      }
+      return [...new Set(hashtags)] // Remove duplicates
+    },
+    formatContent(content) {
+      // Convert hashtags to links
+      return content.replace(/#(\w+)/g, (match, tag) => {
+        return `<a href="#/hashtag/${tag}" class="hashtag-link">#${tag}</a>`
+      })
+    },
     addNewQweet() {
+      const hashtags = this.extractHashtags(this.newQweetContent)
       let newQweet = {
         content: this.newQweetContent,
         date: Date.now(),
-        liked: false
+        liked: false,
+        hashtags: hashtags
       }
       // this.qweets.unshift(newQweet)
       db.collection('qweets').add(newQweet).then(function(docRef) {
@@ -231,6 +248,12 @@ export default {
   border-top: 1px solid rgba(0, 0, 0, 0.12)
 .qweet-content
   white-space: pre-line
+  ::v-deep .hashtag-link
+    color: $primary
+    text-decoration: none
+    font-weight: 500
+    &:hover
+      text-decoration: underline
 .qweet-icons
   margin-left: -5px
 </style>
