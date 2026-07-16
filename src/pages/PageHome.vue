@@ -20,11 +20,54 @@
               <div :class="characterCounterClass">{{ characterCountText }}</div>
             </template>
           </q-input>
+          
+          <!-- Photo Preview -->
+          <div v-if="newQweetPhoto" class="q-mt-md photo-preview-container">
+            <q-img
+              :src="newQweetPhotoPreview"
+              class="photo-preview"
+              :ratio="16/9"
+            >
+              <div class="absolute-top-right q-pa-xs">
+                <q-btn
+                  @click="removePhoto"
+                  icon="close"
+                  color="grey-8"
+                  size="sm"
+                  round
+                  dense
+                />
+              </div>
+            </q-img>
+          </div>
+
+          <!-- Photo Upload Button -->
+          <div class="q-mt-sm">
+            <q-btn
+              @click="$refs.photoInput.click()"
+              icon="far fa-image"
+              color="primary"
+              size="sm"
+              flat
+              round
+              :disable="!!newQweetPhoto"
+            >
+              <q-tooltip>Add photo</q-tooltip>
+            </q-btn>
+            <input
+              ref="photoInput"
+              type="file"
+              accept="image/*"
+              @change="handlePhotoUpload"
+              style="display: none"
+            />
+          </div>
         </div>
         <div class="col col-shrink">
           <q-btn
             @click="addNewQweet"
-            :disable="!newQweetContent"
+            :disable="!newQweetContent || isUploading"
+            :loading="isUploading"
             class="q-mb-lg"
             color="primary"
             label="Qweet"
@@ -67,6 +110,18 @@
                 </span>
               </q-item-label>
               <q-item-label class="qweet-content text-body1">{{ qweet.content }}</q-item-label>
+              
+              <!-- Display Photo if exists -->
+              <div v-if="qweet.photoUrl" class="q-mt-md">
+                <q-img
+                  :src="qweet.photoUrl"
+                  class="qweet-photo"
+                  :ratio="16/9"
+                  @click="showPhotoDialog(qweet.photoUrl)"
+                  style="cursor: pointer; border-radius: 16px; max-width: 500px;"
+                />
+              </div>
+
               <div class="qweet-icons row justify-between q-mt-sm">
                 <q-btn
                   color="grey"
@@ -104,11 +159,21 @@
         </transition-group>
       </q-list>
     </q-scroll-area>
+
+    <!-- Photo Dialog for full-size view -->
+    <q-dialog v-model="photoDialog">
+      <q-card>
+        <q-img :src="selectedPhoto" />
+        <q-card-actions align="right">
+          <q-btn flat label="Close" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
 <script>
-import db from 'src/boot/firebase'
+import db, { storage } from 'src/boot/firebase'
 import { formatDistance } from 'date-fns'
 
 export default {
@@ -116,21 +181,13 @@ export default {
   data() {
     return {
       newQweetContent: '',
+      newQweetPhoto: null,
+      newQweetPhotoPreview: null,
+      isUploading: false,
       maxCharacters: 280,
-      qweets: [
-        // {
-        //   id: 'ID1',
-        //   content: 'Be your own hero, its cheaper than a movie ticket.',
-        //   date: 1611653238221,
-        //   liked: false
-        // },
-        // {
-        //   id: 'ID2',
-        //   content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed feugiat justo id viverra consequat. Integer feugiat lorem faucibus est ornare scelerisque. Donec tempus, nunc vitae semper sagittis, odio magna semper ipsum, et laoreet sapien mauris vitae arcu.',
-        //   date: 1611653252444,
-        //   liked: true
-        // },
-      ]
+      photoDialog: false,
+      selectedPhoto: null,
+      qweets: []
     }
   },
   computed: {
@@ -154,26 +211,110 @@ export default {
     }
   },
   methods: {
-    addNewQweet() {
-      let newQweet = {
-        content: this.newQweetContent,
-        date: Date.now(),
-        liked: false
+    handlePhotoUpload(event) {
+      const file = event.target.files[0]
+      if (file && file.type.startsWith('image/')) {
+        this.newQweetPhoto = file
+        // Create preview URL
+        this.newQweetPhotoPreview = URL.createObjectURL(file)
+      } else {
+        this.$q.notify({
+          message: 'Please select a valid image file',
+          color: 'negative',
+          icon: 'warning'
+        })
       }
-      // this.qweets.unshift(newQweet)
-      db.collection('qweets').add(newQweet).then(function(docRef) {
-        console.log('Document written with ID: ', docRef.id)
-      }).catch(function(error) {
-        console.error('Error adding document: ', error)
-      })
-      this.newQweetContent = ''
     },
-    deleteQweet(qweet) {
-      db.collection('qweets').doc(qweet.id).delete().then(function() {
-        console.log('Document successfully deleted!');
-      }).catch(function(error) {
-        console.error('Error removing document: ', error);
-      })
+    removePhoto() {
+      if (this.newQweetPhotoPreview) {
+        URL.revokeObjectURL(this.newQweetPhotoPreview)
+      }
+      this.newQweetPhoto = null
+      this.newQweetPhotoPreview = null
+      this.$refs.photoInput.value = ''
+    },
+    async addNewQweet() {
+      this.isUploading = true
+      
+      try {
+        let photoUrl = null
+        
+        // Upload photo if one is selected
+        if (this.newQweetPhoto) {
+          const timestamp = Date.now()
+          const fileName = `qweet-photos/${timestamp}_${this.newQweetPhoto.name}`
+          const storageRef = storage.ref(fileName)
+          
+          // Upload file
+          const snapshot = await storageRef.put(this.newQweetPhoto)
+          
+          // Get download URL
+          photoUrl = await snapshot.ref.getDownloadURL()
+        }
+        
+        // Create qweet object
+        let newQweet = {
+          content: this.newQweetContent,
+          date: Date.now(),
+          liked: false
+        }
+        
+        // Add photo URL if exists
+        if (photoUrl) {
+          newQweet.photoUrl = photoUrl
+        }
+        
+        // Save to Firestore
+        await db.collection('qweets').add(newQweet)
+        
+        // Reset form
+        this.newQweetContent = ''
+        this.removePhoto()
+        
+        this.$q.notify({
+          message: 'Qweet posted successfully!',
+          color: 'positive',
+          icon: 'check_circle'
+        })
+      } catch (error) {
+        console.error('Error adding qweet: ', error)
+        this.$q.notify({
+          message: 'Error posting qweet. Please try again.',
+          color: 'negative',
+          icon: 'error'
+        })
+      } finally {
+        this.isUploading = false
+      }
+    },
+    async deleteQweet(qweet) {
+      try {
+        // Delete photo from storage if exists
+        if (qweet.photoUrl) {
+          try {
+            const photoRef = storage.refFromURL(qweet.photoUrl)
+            await photoRef.delete()
+          } catch (error) {
+            console.error('Error deleting photo: ', error)
+          }
+        }
+        
+        // Delete qweet from Firestore
+        await db.collection('qweets').doc(qweet.id).delete()
+        
+        this.$q.notify({
+          message: 'Qweet deleted successfully!',
+          color: 'positive',
+          icon: 'check_circle'
+        })
+      } catch (error) {
+        console.error('Error removing qweet: ', error)
+        this.$q.notify({
+          message: 'Error deleting qweet. Please try again.',
+          color: 'negative',
+          icon: 'error'
+        })
+      }
     },
     toggleLiked(qweet) {
       db.collection('qweets').doc(qweet.id).update({
@@ -183,9 +324,12 @@ export default {
         console.log('Document successfully updated!')
       })
       .catch(function(error) {
-        // The document probably doesn't exist.
         console.error('Error updating document: ', error)
       })
+    },
+    showPhotoDialog(photoUrl) {
+      this.selectedPhoto = photoUrl
+      this.photoDialog = true
     }
   },
   filters: {
@@ -214,6 +358,12 @@ export default {
         }
       })
     })
+  },
+  beforeDestroy() {
+    // Clean up preview URL if component is destroyed
+    if (this.newQweetPhotoPreview) {
+      URL.revokeObjectURL(this.newQweetPhotoPreview)
+    }
   }
 }
 </script>
@@ -233,4 +383,16 @@ export default {
   white-space: pre-line
 .qweet-icons
   margin-left: -5px
+.photo-preview-container
+  position: relative
+  max-width: 500px
+.photo-preview
+  border-radius: 16px
+  overflow: hidden
+.qweet-photo
+  border-radius: 16px
+  overflow: hidden
+  transition: opacity 0.2s
+  &:hover
+    opacity: 0.9
 </style>
