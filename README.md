@@ -1,100 +1,65 @@
-# Qwitter (qwitter)
+# Qwitter
 
-A Cross-Platrom Twitter Clone created with Quasar Framework, VueJS & Firebase
+A cross-platform Twitter clone built with Quasar Framework, Vue.js, and Firebase.
 
-## Setup Firebase
-- Create a new Firebase project named Qwitter
-- Create a Web App named Qwitter
-- Copy the config from the code sample that appears and add it to src/boot/firebase.js
-- Create a Cloud Firestore database - make sure you choose "Start in test mode"
+## Features
 
-## Install the dependencies
+- Web application
+- Desktop app (Electron)
+- Mobile apps (iOS & Android via Cordova)
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js >= 10.18.1
+- npm >= 6.13.4
+
+### Installation
+
 ```bash
 npm install
 ```
 
-## Web Version
+### Firebase Setup
 
-### Start  in development mode
+1. Create a new Firebase project
+2. Create a Web App in your Firebase project
+3. Copy the Firebase config to `src/boot/firebase.js`
+4. Create a Cloud Firestore database in test mode
+
+### Development
+
 ```bash
+# Web
 quasar dev
-```
 
-### Build for production
-```bash
-quasar build
-```
-
-## Desktop Version (Electron)
-
-### Start  in development mode
-```bash
+# Desktop
 quasar dev -m electron
-```
 
-### Build for production
-To build for different platforms, change the `electron > packager > platform` setting in `quasar.conf.js` to `win32`, `darwin`, `mas` or `linux` 
-```bash
-quasar build -m electron
-```
-
-## iOS Version (Cordova)
-
-### Install Cordova globally
-```bash
-npm install -g cordova
-```
-or
-```bash
-sudo npm install -g cordova
-```
-
-### Install Xcode
-
-[Install Xcode](https://developer.apple.com/download/more/)
-
-### Start  in development mode
-```bash
+# iOS (requires Xcode)
 quasar dev -m cordova -T ios
-```
 
-### Start on other Simulator Devices
-```bash
-cd src-cordova
-cordova run ios --list
-cd ..
-quasar dev -m cordova -T ios -e "iPhone-12, 14.3"
-```
-
-### Build for production
-```bash
-quasar build -m cordova -T ios
-```
-
-## Android Version (Cordova)
-
-### Install Cordova globally
-```bash
-npm install -g cordova
-```
-or
-```bash
-sudo npm install -g cordova
-```
-
-### Follow all steps on Quasar site
-
-[Follow all steps on Quasar site](https://quasar.dev/quasar-cli/developing-cordova-apps/preparation#Android-setup)
-
-### Launch Android Virtual Device
-Android Studio > Configure > AVD Manager > Launch an AVD
-
-### Start  in development mode
-```bash
+# Android (requires Android Studio)
 quasar dev -m cordova -T android
 ```
 
-### Build for production
+### Build for Production
+
 ```bash
+# Web
+quasar build
+
+# Desktop
+quasar build -m electron
+
+# iOS
+quasar build -m cordova -T ios
+
+# Android
 quasar build -m cordova -T android
 ```
+
+## License
+
+See [LICENSE](LICENSE) file for details.
