@@ -1,1 +1,17 @@
 // app global css in Sass form
+
+// Dark mode specific styles
+body.body--dark
+  .divider
+    border-color: rgba(255, 255, 255, 0.28)
+  
+  .qweet:not(:first-child)
+    border-top: 1px solid rgba(255, 255, 255, 0.28)
+
+// Light mode specific styles  
+body.body--light
+  .divider
+    border-color: $grey-4
+  
+  .qweet:not(:first-child)
+    border-top: 1px solid rgba(0, 0, 0, 0.12)

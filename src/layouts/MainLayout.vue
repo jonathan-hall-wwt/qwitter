@@ -1,7 +1,7 @@
 <template>
   <q-layout view="lHr lpR fFf">
 
-    <q-header bordered class="bg-white text-black">
+    <q-header bordered :class="$q.dark.isActive ? 'bg-dark text-white' : 'bg-white text-black'">
       <q-toolbar>
         <q-btn dense flat round icon="menu" @click="left = !left" />
 
@@ -14,6 +14,18 @@
             color="primary"
           />
         </q-toolbar-title>
+
+        <q-btn
+          flat
+          round
+          dense
+          :icon="$q.dark.isActive ? 'light_mode' : 'dark_mode'"
+          @click="toggleDarkMode"
+        >
+          <q-tooltip>
+            {{ $q.dark.isActive ? 'Light Mode' : 'Dark Mode' }}
+          </q-tooltip>
+        </q-btn>
 
       </q-toolbar>
     </q-header>
@@ -129,6 +141,19 @@ export default {
     return {
       left: false,
       right: false
+    }
+  },
+  methods: {
+    toggleDarkMode() {
+      this.$q.dark.toggle()
+      this.$q.localStorage.set('darkMode', this.$q.dark.isActive)
+    }
+  },
+  mounted() {
+    // Load dark mode preference from localStorage
+    const darkMode = this.$q.localStorage.getItem('darkMode')
+    if (darkMode !== null) {
+      this.$q.dark.set(darkMode)
     }
   }
 }

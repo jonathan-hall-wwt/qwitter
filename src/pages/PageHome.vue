@@ -37,7 +37,6 @@
 
       <q-separator
         class="divider"
-        color="grey-2"
         size="10px"
       />
 
@@ -226,9 +225,6 @@ export default {
 .divider
   border-top: 1px solid
   border-bottom: 1px solid
-  border-color: $grey-4
-.qweet:not(:first-child)
-  border-top: 1px solid rgba(0, 0, 0, 0.12)
 .qweet-content
   white-space: pre-line
 .qweet-icons
