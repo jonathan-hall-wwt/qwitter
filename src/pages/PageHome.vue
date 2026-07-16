@@ -96,16 +96,30 @@
             class="qweet q-py-md"
           >
             <q-item-section avatar top>
-              <q-avatar size="xl">
+              <q-avatar 
+                size="xl"
+                class="cursor-pointer"
+                @click="goToProfile(qweet.username)"
+              >
                 <img src="https://s.gravatar.com/avatar/ce7f3697e231df38b3ca6065848520da?s=80">
               </q-avatar>
             </q-item-section>
 
             <q-item-section>
               <q-item-label class="text-subtitle1">
-                <strong>Danny Connell</strong>
+                <strong 
+                  class="cursor-pointer hover-underline"
+                  @click="goToProfile(qweet.username)"
+                >
+                  Danny Connell
+                </strong>
                 <span class="text-grey-7">
-                  @danny__connell 
+                  <span 
+                    class="cursor-pointer hover-underline"
+                    @click="goToProfile(qweet.username)"
+                  >
+                    @{{ qweet.username || 'danny__connell' }}
+                  </span>
                   <br class="lt-md">&bull; {{ qweet.date | relativeDate }}
                 </span>
               </q-item-label>
@@ -187,7 +201,8 @@ export default {
       maxCharacters: 280,
       photoDialog: false,
       selectedPhoto: null,
-      qweets: []
+      qweets: [],
+      currentUser: 'danny__connell' // This would come from authentication in a real app
     }
   },
   computed: {
@@ -211,6 +226,10 @@ export default {
     }
   },
   methods: {
+    goToProfile(username) {
+      const profileUsername = username || this.currentUser
+      this.$router.push(`/profile/${profileUsername}`)
+    },
     handlePhotoUpload(event) {
       const file = event.target.files[0]
       if (file && file.type.startsWith('image/')) {
@@ -256,7 +275,8 @@ export default {
         let newQweet = {
           content: this.newQweetContent,
           date: Date.now(),
-          liked: false
+          liked: false,
+          username: this.currentUser
         }
         
         // Add photo URL if exists
@@ -395,4 +415,8 @@ export default {
   transition: opacity 0.2s
   &:hover
     opacity: 0.9
+.cursor-pointer
+  cursor: pointer
+.hover-underline:hover
+  text-decoration: underline
 </style>
