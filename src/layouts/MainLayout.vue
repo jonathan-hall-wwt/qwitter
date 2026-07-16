@@ -46,6 +46,17 @@
           <q-item-section class="text-h6 text-weight-bold">Home</q-item-section>
         </q-item>
         <q-item
+          to="/profile/danny__connell"
+          v-ripple
+          clickable
+        >
+          <q-item-section avatar>
+            <q-icon name="person" size="md" />
+          </q-item-section>
+
+          <q-item-section class="text-h6 text-weight-bold">Profile</q-item-section>
+        </q-item>
+        <q-item
           to="/about"
           v-ripple
           clickable
