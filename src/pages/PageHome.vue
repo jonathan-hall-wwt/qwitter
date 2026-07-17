@@ -91,7 +91,7 @@
           leave-active-class="animated fadeOut slow"
         >
           <q-item
-            v-for="qweet in filteredQweets"
+            v-for="qweet in qweets"
             :key="qweet.id"
             class="qweet q-py-md"
           >
@@ -110,7 +110,7 @@
                 </span>
               </q-item-label>
               <q-item-label class="qweet-content text-body1">
-                <span v-html="formatQweetContent(qweet.content)"></span>
+                {{ qweet.content }}
               </q-item-label>
               
               <!-- Display Photo if exists -->
@@ -189,8 +189,7 @@ export default {
       maxCharacters: 280,
       photoDialog: false,
       selectedPhoto: null,
-      qweets: [],
-      filterHashtag: null
+      qweets: []
     }
   },
   computed: {
@@ -211,14 +210,6 @@ export default {
       } else {
         return 'text-grey-7'
       }
-    },
-    filteredQweets() {
-      if (!this.filterHashtag) {
-        return this.qweets
-      }
-      return this.qweets.filter(qweet => {
-        return qweet.hashtags && qweet.hashtags.includes(this.filterHashtag.toLowerCase())
-      })
     }
   },
   methods: {
@@ -229,12 +220,6 @@ export default {
         return matches.map(tag => tag.toLowerCase())
       }
       return []
-    },
-    formatQweetContent(content) {
-      // Convert hashtags to clickable links
-      return content.replace(/#([\w]+)/g, (match, tag) => {
-        return `<span class="hashtag" onclick="window.filterByHashtag('${tag.toLowerCase()}')">#${tag}</span>`
-      })
     },
     handlePhotoUpload(event) {
       const file = event.target.files[0]
@@ -359,23 +344,6 @@ export default {
     showPhotoDialog(photoUrl) {
       this.selectedPhoto = photoUrl
       this.photoDialog = true
-    },
-    filterByHashtag(hashtag) {
-      this.filterHashtag = hashtag
-      this.$q.notify({
-        message: `Filtering by #${hashtag}`,
-        color: 'info',
-        icon: 'filter_list',
-        actions: [
-          { 
-            label: 'Clear', 
-            color: 'white', 
-            handler: () => { 
-              this.filterHashtag = null 
-            } 
-          }
-        ]
-      })
     }
   },
   filters: {
@@ -384,9 +352,6 @@ export default {
     }
   },
   mounted() {
-    // Make filterByHashtag available globally for onclick handlers
-    window.filterByHashtag = this.filterByHashtag.bind(this)
-    
     db.collection('qweets').orderBy('date').onSnapshot(snapshot => {
       snapshot.docChanges().forEach(change => {
         let qweetChange = change.doc.data()
@@ -413,8 +378,6 @@ export default {
     if (this.newQweetPhotoPreview) {
       URL.revokeObjectURL(this.newQweetPhotoPreview)
     }
-    // Clean up global function
-    delete window.filterByHashtag
   }
 }
 </script>
@@ -446,10 +409,4 @@ export default {
   transition: opacity 0.2s
   &:hover
     opacity: 0.9
-.hashtag
-  color: #1976d2
-  cursor: pointer
-  font-weight: 500
-  &:hover
-    text-decoration: underline
 </style>

@@ -90,9 +90,6 @@
             <q-item
               v-for="(topic, index) in trendingTopics"
               :key="topic.hashtag"
-              clickable
-              v-ripple
-              @click="navigateToHashtag(topic.hashtag)"
               class="trending-item"
             >
               <q-item-section avatar>
@@ -212,17 +209,6 @@ export default {
       const colors = ['primary', 'secondary', 'accent', 'positive', 'info']
       return colors[index % colors.length]
     },
-    navigateToHashtag(hashtag) {
-      // Navigate to home and trigger filter
-      this.$router.push('/').then(() => {
-        // Use a small delay to ensure the page is loaded
-        setTimeout(() => {
-          if (window.filterByHashtag) {
-            window.filterByHashtag(hashtag)
-          }
-        }, 100)
-      })
-    },
     calculateHashtagCounts() {
       const counts = {}
       
@@ -272,8 +258,6 @@ export default {
 
 .trending-item
   transition: background-color 0.2s
-  &:hover
-    background-color: rgba(0, 0, 0, 0.03)
 
 .hashtag-label
   color: #1976d2
