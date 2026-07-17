@@ -74,44 +74,96 @@
         </template>
       </q-input>
 
-      <q-list
-        separator
-        padding
-      >
-        <q-item class="q-pa-md">
-          <q-item-section>
-            <q-item-label overline class="text-grey">Education</q-item-label>
-            <q-item-label class="text-weight-bold">Something amazing happened!</q-item-label>
-            <q-item-label caption>Secondary line text. Lorem ipsum dolor sit amet, consectetur adipiscit elit.</q-item-label>
-          </q-item-section>
+      <!-- Trending Topics Section -->
+      <q-card class="q-ma-md trending-card" flat bordered>
+        <q-card-section class="bg-grey-2">
+          <div class="text-h6 text-weight-bold">
+            <q-icon name="trending_up" color="primary" class="q-mr-sm" />
+            Trending Topics
+          </div>
+        </q-card-section>
 
-          <q-item-section side top>
-            <q-item-label caption>5 min ago</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item class="q-pa-md">
-          <q-item-section>
-            <q-item-label overline class="text-grey">Education</q-item-label>
-            <q-item-label class="text-weight-bold">Something amazing happened!</q-item-label>
-            <q-item-label caption>Secondary line text. Lorem ipsum dolor sit amet, consectetur adipiscit elit.</q-item-label>
-          </q-item-section>
+        <q-separator />
 
-          <q-item-section side top>
-            <q-item-label caption>5 min ago</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item class="q-pa-md">
-          <q-item-section>
-            <q-item-label overline class="text-grey">Education</q-item-label>
-            <q-item-label class="text-weight-bold">Something amazing happened!</q-item-label>
-            <q-item-label caption>Secondary line text. Lorem ipsum dolor sit amet, consectetur adipiscit elit.</q-item-label>
-          </q-item-section>
+        <q-card-section class="q-pa-none">
+          <q-list separator>
+            <q-item
+              v-for="(topic, index) in trendingTopics"
+              :key="topic.hashtag"
+              class="trending-item"
+            >
+              <q-item-section avatar>
+                <q-avatar 
+                  :color="getTrendingColor(index)" 
+                  text-color="white"
+                  size="md"
+                >
+                  {{ index + 1 }}
+                </q-avatar>
+              </q-item-section>
 
-          <q-item-section side top>
-            <q-item-label caption>5 min ago</q-item-label>
-          </q-item-section>
-        </q-item>
-      </q-list>
+              <q-item-section>
+                <q-item-label class="text-weight-bold hashtag-label">
+                  #{{ topic.hashtag }}
+                </q-item-label>
+                <q-item-label caption>
+                  {{ topic.count }} {{ topic.count === 1 ? 'Qweet' : 'Qweets' }}
+                </q-item-label>
+              </q-item-section>
+
+              <q-item-section side>
+                <q-icon 
+                  name="trending_up" 
+                  :color="getTrendingColor(index)" 
+                  size="sm"
+                />
+              </q-item-section>
+            </q-item>
+
+            <q-item v-if="trendingTopics.length === 0" class="text-center">
+              <q-item-section>
+                <q-item-label class="text-grey-6">
+                  <q-icon name="info" size="sm" class="q-mr-xs" />
+                  No trending topics yet
+                </q-item-label>
+                <q-item-label caption class="q-mt-sm">
+                  Start using hashtags in your qweets!
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-card-section>
+      </q-card>
+
+      <!-- Quick Stats Card -->
+      <q-card class="q-ma-md stats-card" flat bordered>
+        <q-card-section class="bg-grey-2">
+          <div class="text-h6 text-weight-bold">
+            <q-icon name="bar_chart" color="primary" class="q-mr-sm" />
+            Quick Stats
+          </div>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section>
+          <div class="row q-col-gutter-md">
+            <div class="col-6 text-center">
+              <div class="text-h5 text-weight-bold text-primary">
+                {{ totalQweets }}
+              </div>
+              <div class="text-caption text-grey-7">Total Qweets</div>
+            </div>
+            <div class="col-6 text-center">
+              <div class="text-h5 text-weight-bold text-pink">
+                {{ totalHashtags }}
+              </div>
+              <div class="text-caption text-grey-7">Unique Hashtags</div>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+
     </q-drawer>
 
     <q-page-container>
@@ -124,12 +176,67 @@
 </template>
 
 <script>
+import db from 'src/boot/firebase'
+
 export default {
   data () {
     return {
       left: false,
-      right: false
+      right: false,
+      qweets: [],
+      hashtagCounts: {}
     }
+  },
+  computed: {
+    trendingTopics() {
+      // Convert hashtagCounts object to array and sort by count
+      const topics = Object.entries(this.hashtagCounts)
+        .map(([hashtag, count]) => ({ hashtag, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10) // Top 10 trending topics
+      
+      return topics
+    },
+    totalQweets() {
+      return this.qweets.length
+    },
+    totalHashtags() {
+      return Object.keys(this.hashtagCounts).length
+    }
+  },
+  methods: {
+    getTrendingColor(index) {
+      const colors = ['primary', 'secondary', 'accent', 'positive', 'info']
+      return colors[index % colors.length]
+    },
+    calculateHashtagCounts() {
+      const counts = {}
+      
+      this.qweets.forEach(qweet => {
+        if (qweet.hashtags && Array.isArray(qweet.hashtags)) {
+          qweet.hashtags.forEach(hashtag => {
+            const tag = hashtag.replace('#', '').toLowerCase()
+            counts[tag] = (counts[tag] || 0) + 1
+          })
+        }
+      })
+      
+      this.hashtagCounts = counts
+    }
+  },
+  mounted() {
+    // Listen to all qweets for trending topics calculation
+    db.collection('qweets').onSnapshot(snapshot => {
+      this.qweets = []
+      snapshot.forEach(doc => {
+        const qweet = doc.data()
+        qweet.id = doc.id
+        this.qweets.push(qweet)
+      })
+      
+      // Recalculate hashtag counts whenever qweets change
+      this.calculateHashtagCounts()
+    })
   }
 }
 </script>
@@ -140,4 +247,19 @@ export default {
   bottom: 0
   left: 50%
   transform: translateX(-50%)
+
+.trending-card
+  border-radius: 16px
+  overflow: hidden
+
+.stats-card
+  border-radius: 16px
+  overflow: hidden
+
+.trending-item
+  transition: background-color 0.2s
+
+.hashtag-label
+  color: #1976d2
+  font-size: 15px
 </style>

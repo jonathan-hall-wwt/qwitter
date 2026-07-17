@@ -109,7 +109,9 @@
                   <br class="lt-md">&bull; {{ qweet.date | relativeDate }}
                 </span>
               </q-item-label>
-              <q-item-label class="qweet-content text-body1">{{ qweet.content }}</q-item-label>
+              <q-item-label class="qweet-content text-body1">
+                {{ qweet.content }}
+              </q-item-label>
               
               <!-- Display Photo if exists -->
               <div v-if="qweet.photoUrl" class="q-mt-md">
@@ -211,6 +213,14 @@ export default {
     }
   },
   methods: {
+    extractHashtags(text) {
+      const hashtagRegex = /#[\w]+/g
+      const matches = text.match(hashtagRegex)
+      if (matches) {
+        return matches.map(tag => tag.toLowerCase())
+      }
+      return []
+    },
     handlePhotoUpload(event) {
       const file = event.target.files[0]
       if (file && file.type.startsWith('image/')) {
@@ -252,11 +262,15 @@ export default {
           photoUrl = await snapshot.ref.getDownloadURL()
         }
         
+        // Extract hashtags
+        const hashtags = this.extractHashtags(this.newQweetContent)
+        
         // Create qweet object
         let newQweet = {
           content: this.newQweetContent,
           date: Date.now(),
-          liked: false
+          liked: false,
+          hashtags: hashtags
         }
         
         // Add photo URL if exists
