@@ -91,7 +91,7 @@
           leave-active-class="animated fadeOut slow"
         >
           <q-item
-            v-for="qweet in qweets"
+            v-for="qweet in filteredQweets"
             :key="qweet.id"
             class="qweet q-py-md"
           >
@@ -109,7 +109,9 @@
                   <br class="lt-md">&bull; {{ qweet.date | relativeDate }}
                 </span>
               </q-item-label>
-              <q-item-label class="qweet-content text-body1">{{ qweet.content }}</q-item-label>
+              <q-item-label class="qweet-content text-body1">
+                <span v-html="formatQweetContent(qweet.content)"></span>
+              </q-item-label>
               
               <!-- Display Photo if exists -->
               <div v-if="qweet.photoUrl" class="q-mt-md">
@@ -187,7 +189,8 @@ export default {
       maxCharacters: 280,
       photoDialog: false,
       selectedPhoto: null,
-      qweets: []
+      qweets: [],
+      filterHashtag: null
     }
   },
   computed: {
@@ -208,9 +211,31 @@ export default {
       } else {
         return 'text-grey-7'
       }
+    },
+    filteredQweets() {
+      if (!this.filterHashtag) {
+        return this.qweets
+      }
+      return this.qweets.filter(qweet => {
+        return qweet.hashtags && qweet.hashtags.includes(this.filterHashtag.toLowerCase())
+      })
     }
   },
   methods: {
+    extractHashtags(text) {
+      const hashtagRegex = /#[\w]+/g
+      const matches = text.match(hashtagRegex)
+      if (matches) {
+        return matches.map(tag => tag.toLowerCase())
+      }
+      return []
+    },
+    formatQweetContent(content) {
+      // Convert hashtags to clickable links
+      return content.replace(/#([\w]+)/g, (match, tag) => {
+        return `<span class="hashtag" onclick="window.filterByHashtag('${tag.toLowerCase()}')">#${tag}</span>`
+      })
+    },
     handlePhotoUpload(event) {
       const file = event.target.files[0]
       if (file && file.type.startsWith('image/')) {
@@ -252,11 +277,15 @@ export default {
           photoUrl = await snapshot.ref.getDownloadURL()
         }
         
+        // Extract hashtags
+        const hashtags = this.extractHashtags(this.newQweetContent)
+        
         // Create qweet object
         let newQweet = {
           content: this.newQweetContent,
           date: Date.now(),
-          liked: false
+          liked: false,
+          hashtags: hashtags
         }
         
         // Add photo URL if exists
@@ -330,6 +359,23 @@ export default {
     showPhotoDialog(photoUrl) {
       this.selectedPhoto = photoUrl
       this.photoDialog = true
+    },
+    filterByHashtag(hashtag) {
+      this.filterHashtag = hashtag
+      this.$q.notify({
+        message: `Filtering by #${hashtag}`,
+        color: 'info',
+        icon: 'filter_list',
+        actions: [
+          { 
+            label: 'Clear', 
+            color: 'white', 
+            handler: () => { 
+              this.filterHashtag = null 
+            } 
+          }
+        ]
+      })
     }
   },
   filters: {
@@ -338,6 +384,9 @@ export default {
     }
   },
   mounted() {
+    // Make filterByHashtag available globally for onclick handlers
+    window.filterByHashtag = this.filterByHashtag.bind(this)
+    
     db.collection('qweets').orderBy('date').onSnapshot(snapshot => {
       snapshot.docChanges().forEach(change => {
         let qweetChange = change.doc.data()
@@ -364,6 +413,8 @@ export default {
     if (this.newQweetPhotoPreview) {
       URL.revokeObjectURL(this.newQweetPhotoPreview)
     }
+    // Clean up global function
+    delete window.filterByHashtag
   }
 }
 </script>
@@ -395,4 +446,10 @@ export default {
   transition: opacity 0.2s
   &:hover
     opacity: 0.9
+.hashtag
+  color: #1976d2
+  cursor: pointer
+  font-weight: 500
+  &:hover
+    text-decoration: underline
 </style>
