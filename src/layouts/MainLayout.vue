@@ -74,44 +74,54 @@
         </template>
       </q-input>
 
-      <q-list
-        separator
-        padding
-      >
-        <q-item class="q-pa-md">
-          <q-item-section>
-            <q-item-label overline class="text-grey">Education</q-item-label>
-            <q-item-label class="text-weight-bold">Something amazing happened!</q-item-label>
-            <q-item-label caption>Secondary line text. Lorem ipsum dolor sit amet, consectetur adipiscit elit.</q-item-label>
-          </q-item-section>
+      <!-- Trending Qashtags Section -->
+      <div class="trending-section q-pa-md">
+        <div class="text-h6 text-weight-bold q-mb-md">Trending Qashtags</div>
+        
+        <!-- Loading State -->
+        <div v-if="loadingTrending" class="text-center q-py-md">
+          <q-spinner color="primary" size="30px" />
+        </div>
+        
+        <!-- Empty State -->
+        <div v-else-if="trendingQashtags.length === 0" class="text-center q-py-md">
+          <q-icon name="tag" size="40px" color="grey-5" />
+          <div class="text-body2 text-grey-6 q-mt-sm">
+            No trending qashtags yet
+          </div>
+        </div>
+        
+        <!-- Trending List -->
+        <q-list v-else separator padding>
+          <q-item
+            v-for="(item, index) in trendingQashtags"
+            :key="item.qashtag"
+            :to="`/qashtag/${item.qashtag.substring(1)}`"
+            clickable
+            v-ripple
+            class="trending-item"
+          >
+            <q-item-section avatar>
+              <div class="trending-rank text-weight-bold text-grey-7">
+                {{ index + 1 }}
+              </div>
+            </q-item-section>
+            
+            <q-item-section>
+              <q-item-label class="text-weight-bold qashtag-text">
+                {{ item.qashtag }}
+              </q-item-label>
+              <q-item-label caption class="text-grey-7">
+                {{ item.count }} {{ item.count === 1 ? 'Qweet' : 'Qweets' }}
+              </q-item-label>
+            </q-item-section>
 
-          <q-item-section side top>
-            <q-item-label caption>5 min ago</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item class="q-pa-md">
-          <q-item-section>
-            <q-item-label overline class="text-grey">Education</q-item-label>
-            <q-item-label class="text-weight-bold">Something amazing happened!</q-item-label>
-            <q-item-label caption>Secondary line text. Lorem ipsum dolor sit amet, consectetur adipiscit elit.</q-item-label>
-          </q-item-section>
-
-          <q-item-section side top>
-            <q-item-label caption>5 min ago</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item class="q-pa-md">
-          <q-item-section>
-            <q-item-label overline class="text-grey">Education</q-item-label>
-            <q-item-label class="text-weight-bold">Something amazing happened!</q-item-label>
-            <q-item-label caption>Secondary line text. Lorem ipsum dolor sit amet, consectetur adipiscit elit.</q-item-label>
-          </q-item-section>
-
-          <q-item-section side top>
-            <q-item-label caption>5 min ago</q-item-label>
-          </q-item-section>
-        </q-item>
-      </q-list>
+            <q-item-section side>
+              <q-icon name="trending_up" :color="getTrendingColor(index)" />
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </div>
     </q-drawer>
 
     <q-page-container>
@@ -124,11 +134,64 @@
 </template>
 
 <script>
+import db from 'src/boot/firebase'
+
 export default {
   data () {
     return {
       left: false,
-      right: false
+      right: false,
+      trendingQashtags: [],
+      loadingTrending: true,
+      unsubscribe: null
+    }
+  },
+  methods: {
+    getTrendingColor(index) {
+      if (index === 0) return 'red'
+      if (index === 1) return 'orange'
+      if (index === 2) return 'amber'
+      return 'primary'
+    },
+    calculateTrending() {
+      // Listen to all qweets and calculate trending qashtags
+      this.unsubscribe = db.collection('qweets')
+        .onSnapshot(snapshot => {
+          const qashtagCounts = {}
+          
+          snapshot.forEach(doc => {
+            const qweet = doc.data()
+            if (qweet.qashtags && Array.isArray(qweet.qashtags)) {
+              qweet.qashtags.forEach(qashtag => {
+                if (qashtagCounts[qashtag]) {
+                  qashtagCounts[qashtag]++
+                } else {
+                  qashtagCounts[qashtag] = 1
+                }
+              })
+            }
+          })
+          
+          // Convert to array and sort by count
+          this.trendingQashtags = Object.entries(qashtagCounts)
+            .map(([qashtag, count]) => ({ qashtag, count }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 10) // Top 10 trending
+          
+          this.loadingTrending = false
+        }, error => {
+          console.error('Error loading trending qashtags: ', error)
+          this.loadingTrending = false
+        })
+    }
+  },
+  mounted() {
+    this.calculateTrending()
+  },
+  beforeDestroy() {
+    // Unsubscribe from Firestore listener
+    if (this.unsubscribe) {
+      this.unsubscribe()
     }
   }
 }
@@ -140,4 +203,24 @@ export default {
   bottom: 0
   left: 50%
   transform: translateX(-50%)
+
+.trending-section
+  background: #f7f9fc
+  border-radius: 16px
+  margin: 0 8px
+
+.trending-item
+  border-radius: 8px
+  transition: background-color 0.2s
+  &:hover
+    background-color: rgba(25, 118, 210, 0.05)
+
+.trending-rank
+  font-size: 18px
+  min-width: 24px
+  text-align: center
+
+.qashtag-text
+  color: #1976d2
+  font-size: 15px
 </style>
