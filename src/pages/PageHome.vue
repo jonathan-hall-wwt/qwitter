@@ -180,6 +180,7 @@ export default {
   name: 'PageHome',
   data() {
     return {
+      currentUser: 'danny__connell', // Hardcoded for now, will be replaced with auth
       newQweetContent: '',
       newQweetPhoto: null,
       newQweetPhotoPreview: null,
@@ -256,7 +257,8 @@ export default {
         let newQweet = {
           content: this.newQweetContent,
           date: Date.now(),
-          liked: false
+          liked: false,
+          username: this.currentUser // Add username field
         }
         
         // Add photo URL if exists
