@@ -9,8 +9,27 @@ A Cross-Platrom Twitter Clone created with Quasar Framework, VueJS & Firebase
 - ✅ Delete qweets
 - ✅ Real-time updates with Firebase
 - ✅ **Photo uploads** - Attach photos to your qweets
+- ✅ **Trending Qashtags** - Discover trending topics and filter by hashtags
 - ✅ Responsive design for mobile, tablet, and desktop
 - ✅ Cross-platform support (Web, Desktop, iOS, Android)
+
+## New: Trending Qashtags Feature 🔥
+
+Qwitter now includes a comprehensive hashtag system called "Qashtags"!
+
+### What's Included:
+- **Automatic Detection**: Hashtags in your qweets are automatically detected and made clickable
+- **Qashtag Pages**: Click any hashtag to see all qweets tagged with it
+- **Trending Sidebar**: Real-time trending qashtags showing the top 10 most popular topics
+- **Smart Filtering**: Find qweets by topic instantly
+
+### How to Use:
+1. Add hashtags to your qweets: "Loving #JavaScript and #VueJS!"
+2. Click any hashtag to see related qweets
+3. Check the trending sidebar to discover popular topics
+4. Explore conversations by topic
+
+See [TRENDING_QASHTAGS_FEATURE.md](TRENDING_QASHTAGS_FEATURE.md) for detailed documentation.
 
 ## Setup Firebase
 
@@ -25,6 +44,13 @@ A Cross-Platrom Twitter Clone created with Quasar Framework, VueJS & Firebase
 - Click "Get Started"
 - Choose "Start in test mode" for development
 - Select a Cloud Storage location
+
+### Firestore Index (for Qashtags)
+When you first use the qashtag feature, Firebase will prompt you to create a composite index:
+- Collection: `qweets`
+- Fields: `qashtags` (Arrays) + `date` (Descending)
+
+Simply click the link provided in the browser console to create the index automatically.
 
 See [PHOTO_FEATURE.md](PHOTO_FEATURE.md) for detailed information about the photo upload feature.
 

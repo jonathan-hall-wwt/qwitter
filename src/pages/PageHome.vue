@@ -109,7 +109,9 @@
                   <br class="lt-md">&bull; {{ qweet.date | relativeDate }}
                 </span>
               </q-item-label>
-              <q-item-label class="qweet-content text-body1">{{ qweet.content }}</q-item-label>
+              <q-item-label class="qweet-content text-body1">
+                <span v-html="formatQweetContent(qweet.content)"></span>
+              </q-item-label>
               
               <!-- Display Photo if exists -->
               <div v-if="qweet.photoUrl" class="q-mt-md">
@@ -211,6 +213,23 @@ export default {
     }
   },
   methods: {
+    extractQashtags(content) {
+      // Extract hashtags from content
+      const qashtagRegex = /#[\w]+/g
+      const matches = content.match(qashtagRegex)
+      if (matches) {
+        // Return unique qashtags in lowercase
+        return [...new Set(matches.map(tag => tag.toLowerCase()))]
+      }
+      return []
+    },
+    formatQweetContent(content) {
+      // Replace hashtags with clickable links
+      const qashtagRegex = /#([\w]+)/g
+      return content.replace(qashtagRegex, (match, tag) => {
+        return `<a href="#/qashtag/${tag.toLowerCase()}" class="qashtag-link">#${tag}</a>`
+      })
+    },
     handlePhotoUpload(event) {
       const file = event.target.files[0]
       if (file && file.type.startsWith('image/')) {
@@ -252,11 +271,15 @@ export default {
           photoUrl = await snapshot.ref.getDownloadURL()
         }
         
+        // Extract qashtags from content
+        const qashtags = this.extractQashtags(this.newQweetContent)
+        
         // Create qweet object
         let newQweet = {
           content: this.newQweetContent,
           date: Date.now(),
-          liked: false
+          liked: false,
+          qashtags: qashtags
         }
         
         // Add photo URL if exists
@@ -395,4 +418,10 @@ export default {
   transition: opacity 0.2s
   &:hover
     opacity: 0.9
+.qashtag-link
+  color: #1976d2
+  text-decoration: none
+  font-weight: 500
+  &:hover
+    text-decoration: underline
 </style>
