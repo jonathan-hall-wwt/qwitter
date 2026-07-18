@@ -146,6 +146,16 @@
                   round
                 />
                 <q-btn
+                  @click="toggleBookmark(qweet)"
+                  :color="isBookmarked(qweet.id) ? 'primary' : 'grey'"
+                  :icon="isBookmarked(qweet.id) ? 'bookmark' : 'bookmark_border'"
+                  size="sm"
+                  flat
+                  round
+                >
+                  <q-tooltip>{{ isBookmarked(qweet.id) ? 'Remove bookmark' : 'Bookmark' }}</q-tooltip>
+                </q-btn>
+                <q-btn
                   @click="deleteQweet(qweet)"
                   color="grey"
                   icon="fas fa-trash"
@@ -187,7 +197,9 @@ export default {
       maxCharacters: 280,
       photoDialog: false,
       selectedPhoto: null,
-      qweets: []
+      qweets: [],
+      bookmarkedQweetIds: [],
+      currentUser: 'danny__connell'
     }
   },
   computed: {
@@ -330,6 +342,55 @@ export default {
     showPhotoDialog(photoUrl) {
       this.selectedPhoto = photoUrl
       this.photoDialog = true
+    },
+    isBookmarked(qweetId) {
+      return this.bookmarkedQweetIds.includes(qweetId)
+    },
+    async toggleBookmark(qweet) {
+      const qweetId = qweet.id
+      const isCurrentlyBookmarked = this.isBookmarked(qweetId)
+      
+      try {
+        if (isCurrentlyBookmarked) {
+          // Remove bookmark
+          const bookmarkQuery = await db.collection('bookmarks')
+            .where('userId', '==', this.currentUser)
+            .where('qweetId', '==', qweetId)
+            .get()
+          
+          bookmarkQuery.forEach(async (doc) => {
+            await doc.ref.delete()
+          })
+          
+          this.$q.notify({
+            message: 'Bookmark removed',
+            color: 'positive',
+            icon: 'bookmark_remove',
+            position: 'top'
+          })
+        } else {
+          // Add bookmark
+          await db.collection('bookmarks').add({
+            userId: this.currentUser,
+            qweetId: qweetId,
+            bookmarkedAt: Date.now()
+          })
+          
+          this.$q.notify({
+            message: 'Qweet bookmarked!',
+            color: 'positive',
+            icon: 'bookmark',
+            position: 'top'
+          })
+        }
+      } catch (error) {
+        console.error('Error toggling bookmark: ', error)
+        this.$q.notify({
+          message: 'Error updating bookmark',
+          color: 'negative',
+          icon: 'error'
+        })
+      }
     }
   },
   filters: {
@@ -338,6 +399,17 @@ export default {
     }
   },
   mounted() {
+    // Listen to bookmarks
+    db.collection('bookmarks')
+      .where('userId', '==', this.currentUser)
+      .onSnapshot(snapshot => {
+        this.bookmarkedQweetIds = []
+        snapshot.forEach(doc => {
+          this.bookmarkedQweetIds.push(doc.data().qweetId)
+        })
+      })
+    
+    // Listen to qweets
     db.collection('qweets').orderBy('date').onSnapshot(snapshot => {
       snapshot.docChanges().forEach(change => {
         let qweetChange = change.doc.data()
